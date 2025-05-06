@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Clone') {
             steps {
-                git 'https://github.com/yourusername/chef-claude.git'
+                git 'https://github.com/KowsikaJ/CICD.git'
             }
         }
 
