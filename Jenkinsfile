@@ -8,20 +8,32 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git 'https://github.com/KowsikaJ/CICD.git'
+        git 'https://github.com/KowsikaJ/CICD.git' // Replace with your repository URL
       }
     }
 
     stage('Build Docker Images') {
       steps {
+        echo 'Building Docker images...'
         sh 'docker-compose build'
       }
     }
 
     stage('Run Containers') {
       steps {
-        sh 'docker-compose down' // stop old containers if any
+        echo 'Stopping old containers...'
+        sh 'docker-compose down || true'  // Use || true to avoid errors if no containers are running
+
+        echo 'Starting new containers...'
         sh 'docker-compose up -d'
+      }
+    }
+
+    // Optional Test Stage (if you have any tests)
+    stage('Run Tests') {
+      steps {
+        echo 'Running tests...'
+        sh 'npm test' // Or replace with the appropriate test command
       }
     }
   }
