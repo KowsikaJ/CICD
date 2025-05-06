@@ -1,46 +1,37 @@
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        DOCKERHUB_REPO = 'kowsikaj'
+  environment {
+    COMPOSE_PROJECT_NAME = 'recipeapp'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        git 'https://github.com/KowsikaJ/CICD.git'
+      }
     }
 
-    stages {
-        stage('Clone') {
-            steps {
-                git 'https://github.com/KowsikaJ/CICD.git'
-            }
-        }
-
-        stage('Docker Login') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                }
-            }
-        }
-
-        stage('Build Docker Images') {
-            steps {
-                sh 'docker build -t $DOCKERHUB_REPO/chefclaude-frontend ./frontend'
-                sh 'docker build -t $DOCKERHUB_REPO/chefclaude-backend ./backend'
-            }
-        }
-
-        stage('Push Images') {
-            steps {
-                sh 'docker push $DOCKERHUB_REPO/chefclaude-frontend'
-                sh 'docker push $DOCKERHUB_REPO/chefclaude-backend'
-                sh 'docker logout'
-            }
-        }
-
-        stage('Deploy Containers') {
-            steps {
-                sh 'docker-compose down || true'
-                sh 'docker-compose up -d'
-            }
-        }
+    stage('Build Docker Images') {
+      steps {
+        sh 'docker-compose build'
+      }
     }
+
+    stage('Run Containers') {
+      steps {
+        sh 'docker-compose down' // stop old containers if any
+        sh 'docker-compose up -d'
+      }
+    }
+  }
+
+  post {
+    success {
+      echo '✅ Application successfully deployed!'
+    }
+    failure {
+      echo '❌ Deployment failed.'
+    }
+  }
 }
-
