@@ -2,9 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-        FRONTEND_IMAGE = 'yourdockerhub/chefclaude-frontend'
-        BACKEND_IMAGE  = 'yourdockerhub/chefclaude-backend'
+        DOCKERHUB_REPO = 'kowsikaj'
     }
 
     stages {
@@ -14,23 +12,26 @@ pipeline {
             }
         }
 
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                }
+            }
+        }
+
         stage('Build Docker Images') {
             steps {
-                script {
-                    docker.build("${FRONTEND_IMAGE}", "./frontend")
-                    docker.build("${BACKEND_IMAGE}", "./backend")
-                }
+                sh 'docker build -t $DOCKERHUB_REPO/chefclaude-frontend ./frontend'
+                sh 'docker build -t $DOCKERHUB_REPO/chefclaude-backend ./backend'
             }
         }
 
         stage('Push Images') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
-                        docker.image("${FRONTEND_IMAGE}").push()
-                        docker.image("${BACKEND_IMAGE}").push()
-                    }
-                }
+                sh 'docker push $DOCKERHUB_REPO/chefclaude-frontend'
+                sh 'docker push $DOCKERHUB_REPO/chefclaude-backend'
+                sh 'docker logout'
             }
         }
 
@@ -42,3 +43,4 @@ pipeline {
         }
     }
 }
+
