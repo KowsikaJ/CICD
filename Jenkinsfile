@@ -32,8 +32,8 @@ pipeline {
     // Optional Test Stage (if you have any tests)
     stage('Run Tests') {
       steps {
-        echo 'Running tests...'
-        sh 'npm test' // Or replace with the appropriate test command
+        echo 'Running backend tests...'
+        sh 'docker-compose exec backend npm test'
       }
     }
   }

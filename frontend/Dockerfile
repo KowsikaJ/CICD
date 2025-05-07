@@ -10,7 +10,8 @@ COPY package*.json ./
 RUN npm install
 
 # Fix vulnerabilities
-RUN npm audit fix || true
+RUN npm install --omit=dev
+
 
 # Copy the rest of the app code
 COPY . .
