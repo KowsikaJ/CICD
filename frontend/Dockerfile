@@ -5,7 +5,7 @@ COPY . .
 RUN npm install
 RUN npm run build
 
-RUN npm audit fix
+#RUN npm audit fix
 # or if you want to force fixing breaking changes
 # RUN npm audit fix --force
 
