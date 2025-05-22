@@ -3,10 +3,14 @@ services:
     build:
       context: ./backend
     ports:
-      - "5001:5000"  # host:container
+      - "5001:5000"  # Local:Container
+    environment:
+      - NODE_ENV=production
 
   frontend:
     build:
       context: ./frontend
     ports:
-      - "3001:3000"  # host:container
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
