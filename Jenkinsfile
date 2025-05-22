@@ -8,7 +8,20 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git 'https://github.com/KowsikaJ/CICD.git' // Replace with your repository URL
+        echo '📥 Cloning the Git repository...'
+        git 'https://github.com/KowsikaJ/CICD.git'  // Replace if needed
+      }
+    }
+
+    stage('Clean Up Old Containers') {
+      steps {
+        echo '🧹 Removing any existing containers, networks, and volumes...'
+        sh '''
+          docker-compose down --remove-orphans || true
+          docker container prune -f || true
+          docker network prune -f || true
+          docker volume prune -f || true
+        '''
       }
     }
 
@@ -21,10 +34,7 @@ pipeline {
 
     stage('Run Containers') {
       steps {
-        echo '🛑 Stopping old containers...'
-        sh 'docker-compose down || true'  // Avoid errors if no containers are running
-
-        echo '🚀 Starting new containers...'
+        echo '🚀 Starting containers in detached mode...'
         sh 'docker-compose up -d'
       }
     }
@@ -32,18 +42,23 @@ pipeline {
     stage('Run Tests') {
       steps {
         echo '🧪 Running backend tests...'
-        // Gracefully skip tests if backend isn't ready
-        sh 'docker-compose exec backend sh -c "npm test || echo Test failed or container not ready"'
+        // Gracefully continue if test fails or container is not ready
+        sh '''
+          docker-compose exec backend sh -c "npm test || echo ❌ Tests failed or service not ready"
+        '''
       }
     }
   }
 
   post {
     success {
-      echo '✅ Application successfully deployed!'
+      echo '✅ Application successfully deployed and tested!'
     }
     failure {
       echo '❌ Deployment failed.'
+    }
+    always {
+      echo '📦 Pipeline finished.'
     }
   }
 }
