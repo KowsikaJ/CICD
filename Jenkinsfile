@@ -2,13 +2,13 @@ pipeline {
   agent any
 
   environment {
-    COMPOSE_PROJECT_NAME = 'recipeapp'
+    DOCKER_COMPOSE_FILE = 'docker-compose.yml'
   }
 
   stages {
     stage('Checkout') {
       steps {
-        git 'https://github.com/KowsikaJ/CICD.git'
+        checkout scm
       }
     }
 
@@ -22,7 +22,7 @@ pipeline {
     stage('Stop Old Containers') {
       steps {
         echo '🛑 Stopping old containers...'
-        sh 'docker-compose down --remove-orphans || true'
+        sh 'docker-compose down --remove-orphans'
       }
     }
 
@@ -30,6 +30,13 @@ pipeline {
       steps {
         echo '🚀 Starting new containers...'
         sh 'docker-compose up -d'
+      }
+    }
+
+    stage('Verify Backend Logs') {
+      steps {
+        echo '📄 Backend container logs:'
+        sh 'docker logs recipeapp-backend-1 || true'
       }
     }
   }
